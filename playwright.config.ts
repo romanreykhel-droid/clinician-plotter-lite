@@ -1,13 +1,19 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: 'tests',                       // where tests live
-  use: { baseURL: 'http://localhost:5173' }, // Vite's default URL
+  testDir: 'tests',
+  reporter: [['html', { open: 'never', outputFolder: 'playwright-report' }]],
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry',
+    video: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+  },
   webServer: {
-    command: 'npm run dev',               // how to start your app
-    port: 5173,                           // must match baseURL
-    reuseExistingServer: true,            // don't restart if already running
-    timeout: 60_000,                      // give it time to boot
+    command: 'npm run dev',
+    port: 5173,
+    reuseExistingServer: true,
+    timeout: 60_000,
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });
