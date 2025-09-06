@@ -1,0 +1,46 @@
+name: E2E Tests
+
+on:
+  push:
+  pull_request:
+  # Nightly at 2:30 AM PT (09:30 UTC) — remove if you don't want this
+  schedule:
+    - cron: "30 9 * * *"
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      # Runs tests; webServer in playwright.config.ts starts Vite automatically
+      - name: Run tests
+        run: npm run test:e2e
+
+      # Upload HTML report even if tests fail
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
